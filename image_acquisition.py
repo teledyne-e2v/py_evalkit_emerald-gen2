@@ -10,11 +10,12 @@ from time import sleep
 from PIL import Image
 
 # USER PARAMETERS
-from sensor import Topaz
+from sensor import Sensor
 
-NIMAGES = 5  # Number of images to be acquired
+NIMAGES = 5             # Number of images to be acquired
 INTERVAL_PLOT = 0.0001  # Refresh rate in ms
-EXPOSURE_TIME = 25  # Integration time in ms
+EXPOSURE_TIME = 25      # Integration time in ms
+PIXEL_FORMAT = 8        # 8=8b / 10=10b / 12=12b
 
 #  SIMPLE OBJECT CREATION AND IMAGE ACQUISITION
 if __name__ == "__main__":
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     print("*******************************************************************")
 
     # Open connection
-    camera = Topaz()
+    camera = Sensor()
 
     if camera is not None:
         #sensor chip-ID check
@@ -33,8 +34,7 @@ if __name__ == "__main__":
         sleep(0.5)
 
         # Setup camera format
-        camera.set_camera_format(10) #10b format
-        #camera.set_camera_format(8)  #8b format
+        camera.set_camera_format(PIXEL_FORMAT)
 
         # Activate external trigger
         #camera.set_trigger_mode(2)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         print_info(camera)
 
         # define a parameter to sweep - example with exposure in ms
-        param_exposure = [10]
+        param_exposure = [10, 20, 30, 40]
         for p in param_exposure:
             camera.exposure_time = p
             print("\nparam: exposure=" + str(p))

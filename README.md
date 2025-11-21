@@ -1,14 +1,16 @@
-# py_evalkit_topaz
-A python code to play with Topaz EVK
+# py_evalkit_emerald-gen2
+A python code to play with Emerald-Gen2 EVK
 
 ## Requirements
-Works with Python3
+Works with Python3.12
 
 Please install the packages list available in `requirements.txt`  
 
-Before starting, make sure this path is path is correct in the file `sensor.py`:
+Install `opencv_python` to use `live_preview.py`
 
-```DEFAULT_BIN_DIR = "C:/Program Files/Teledyne e2v/Evalkit-Topaz/1.0/pigentl/bin"```
+Before starting, make sure this path is  correct in the file `sensor.py`:
+
+```DEFAULT_BIN_DIR = r"C:\Program Files\Teledyne e2v\Evalkit-Emeraldgen2\1.0\pigentl\bin"```
 
 ## Image Acquisition
 The main project file is `image_acquisition.py`
@@ -23,3 +25,17 @@ Images are displayed and profiles calculated.
 For external trigger use, please uncomment lines 40/41 and define a number of frames you want to acquire in total with the variable `NIMAGES`
 
 Feel free to comment the unnecessary functions and add your own processing !
+
+## Live Preview
+The main project file is `live_preview.py`
+
+Video stream is started and a window is opened to display the images with some statistics in overlay.
+After drawing a rectangle on the image, the statics are calculated for the selected ROI.
+
+That is possible to adjust the exposure time (in ms) with the parameter `EXPOSURE_TIME`
+
+The pixel format can be selected between 8, 10 or 12b with the parameter `PIXEL_FORMAT`
+
+Press `S` to save a RAW image
+
+Press `Q` or `ESC` to stop properly the live preview application

@@ -1,37 +1,36 @@
 from evaluationkit import *
 import string
 
-DEFAULT_BIN_DIR = "C:/Program Files/Teledyne e2v/Evalkit-Topaz/1.0/pigentl/bin"
+DEFAULT_BIN_DIR = r"C:\Program Files\Teledyne e2v\Evalkit-Emeraldgen2\1.0\pigentl\bin"
 DEFAULT_CTI_NAME = "pigentl.cti"
 DEFAULT_DLL_NAME = "pigentl-sdk.dll"
 
 # used to map sensor features address from XML file
 _xml_bootstrap_nodes_addresses = {
-    "DeviceVendorName": 0x0,
-    "DeviceModelName": 0x20,
-    "DeviceVersion": 0x40,
+    "DeviceVendorName":      0x0,
+    "DeviceModelName":       0x20,
+    "DeviceVersion":         0x40,
     "DeviceFirmwareVersion": 0x60,
-    "SerialNumber": 0xE0,
-    "SensorWidth": 0x1000C,
-    "SensorHeight": 0x10010,
-    "PixelFormat": 0x10014,
-    "AutoExposure": 0x10300,
-    "AWBredGain": 0x10410,
-    "AWBgreenGain": 0x10414,
-    "AWBblueGain": 0x10418,
-    "AWBenable": 0x10400,
+    "SerialNumber":          0xE0,
+    "SensorWidth":   0x1000C,
+    "SensorHeight":  0x10010,
+    "PixelFormat":   0x10014,
+    "AWBredGain":    0xE700000C,
+    "AWBgreenGain":  0xE7000010,
+    "AWBblueGain":   0xE7000014,
+    "AWBenable":     0xE7000008,
     "TriggerSource": 0x11000,
 }
 
 # used to map Sensor features address from XML file
 _xml_sensor_nodes_addresses = {
-    "BaseAddress": 0x30000,
-    "ExposureTime": 0x3000B,
-    "WaitTime": 0x30008,
-    "LineLength": 0x30006,
-    "AnalogGain": 0x3000D,
-    "ClampOffset": 0x30022,
-    "ChipID": 0x3007F,
+    "BaseAddress":  0x30000,
+    "ExposureTime": 0x30020,
+    "WaitTime":     0x3000B,
+    "LineLength":   0x30006,
+    "ConfigGain":   0x30022,
+    "ClampOffset":  0x30036,
+    "ChipID":       0x3007F,
 }
 
 
@@ -39,20 +38,32 @@ _xml_sensor_nodes_addresses = {
 xml_pixel_format_nbits = {
     0x01080001: 8,   # Mono8
     0x010A0046: 10,  # Mono10p
-    0x02180014: 32,  # RGB24
+    0x010C0047: 12,  # Mono12p
+    0x01080009: 24,  # BayerRG8
+    0x010A0058: 30,  # BayerRG10p
+    0x010C0059: 36,  # BayerRG12p
     8: 0x01080001,   # Mono8
     10: 0x010A0046,  # Mono10p
-    32: 0x02180014   # RGB24
+    12: 0x010C0047,  # Mono12p
+    24: 0x01080009,  # BayerRG8
+    30: 0x010A0058,  # BayerRG10p
+    36: 0x010C0059,  # BayerRG12p
 }
 
 # used to get the pixel type from the EK/XML pixel format
 xml_pixel_format_type = {
-    0x01080001: "Mono8",     # Mono8
-    0x010A0046: "Mono10p",   # Mono10p
-    0x02180014: "RGB24",     # RGB24
-    "Mono8":    0x01080001,  # Mono8
-    "Mono10p":  0x010A0046,  # Mono10p
-    "RGB24":    0x02180014   # RGB24
+    0x01080001: "Mono8",       # Mono8
+    0x010A0046: "Mono10p",     # Mono10p
+    0x010C0047: "Mono12p",     # Mono12p
+    0x01080009: "BayerRG8",    # BayerRG8
+    0x010A0058: "BayerRG10p",  # BayerRG10p
+    0x010C0059: "BayerRG12p",  # BayerRG12p
+    "Mono8":      0x01080001,  # Mono8
+    "Mono10p":    0x010A0046,  # Mono10p
+    "Mono12p":    0x010C0047,  # Mono12p
+    "BayerRG8":   0x01080009,  # BayerRG8
+    "BayerRG10p": 0x010A0058,  # BayerRG10p
+    "BayerRG12p": 0x010C0059,  # BayerRG12p
 }
 
 def clean_char(text):
@@ -73,7 +84,7 @@ def print_info(ek):
     print("\tWait time                   %.2f ms" % ek.wait_time)
 
 
-class Topaz(EvaluationKit):
+class Sensor(EvaluationKit):
     def __init__(self, dll_path=None, cti_path=None):
         self.DEFAULT_BIN_DIR = DEFAULT_BIN_DIR
         self.DEFAULT_CTI_NAME = DEFAULT_CTI_NAME
@@ -189,16 +200,6 @@ class Topaz(EvaluationKit):
         else:
             err = self.write(address=_xml_bootstrap_nodes_addresses["AWBenable"], data=int(3))
         return err
-
-    def enable_vertical_subsampling(self, enable):
-        # Enable AWB, active when acquisition is running
-        if enable == 0:
-            err = self.write(address=_xml_bootstrap_nodes_addresses["VerticalSubsampling"], data=int(0))
-            # No subsampling
-        else:
-            err = self.write(address=_xml_bootstrap_nodes_addresses["VerticalSubsampling"], data=int(4))
-            # Vertical subsampling 2
-        return err		
 
     def read_sensor_reg(self, address):
         addr=address+_xml_sensor_nodes_addresses["BaseAddress"]
